@@ -3,19 +3,132 @@
    ========================================= */
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f3f4f6;
-    color: #333;
-    line-height: 1.6;
+    background-color: #0b0f19;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
+
+/* Нижняя навигация */
+.nav-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0; width: 100%;
+    background: #000000;
+    border-top: 1px solid #1f2937;
+    display: flex; justify-content: space-around;
+    padding: 8px 0; z-index: 50;
+}
+.nav-btn {
+    background: transparent;
+    border: none;
+    display: flex; flex-direction: column; align-items: center;
+    color: #6b7280; font-size: 12px;
+    gap: 4px; cursor: pointer;
+    padding: 4px 8px;
+    font-weight: normal;
+}
+.nav-btn.active, .nav-btn:hover { color: #fbbf24; }
+.nav-btn i { font-size: 20px; }
+.nav-btn.btn-primary { background: transparent; color: #6b7280; }
+.nav-btn.btn-primary.active { color: #fbbf24; }
+
+/* Контент и секции */
+#app {
+    flex: 1; padding-bottom: 80px; padding: 16px;
+    overflow-y: auto;
+}
+.app-section {
+    display: none; /* Управляется через app.js */
+}
+
+/* Элементы управления списка */
+.search-filter-bar {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.form-control {
+    width: 100%; padding: 10px; border-radius: 8px;
+    background: #1f2937; border: 1px solid #1f2937;
+    color: #ffffff;
+}
+.muscle-filters {
+    display: flex; 
+    gap: 10px; 
+    flex-wrap: wrap;
+    justify-content: center; 
+    margin-top: 5px;
+}
+.muscle-label { display: flex; align-items: center; gap: 5px; font-size: 14px; }
+
+/* Карточка тренировки */
+.workout-card {
+    display: flex; 
+    flex-direction: column;
+    background: #000000; 
+    border: 1px solid #1f2937;
+    border-radius: 16px; 
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.6); 
+    transition: transform 0.2s;
+    padding: 16px;
+}
+
+#form-add-workout {
+    display: flex; 
+    flex-direction: 
+    column; gap: 12px;
+}
+
+.card-header h3 { color: #fbbf24; margin-bottom: 4px; font-size: 1.2rem; }
+.card-header small { color: #6b7280; font-size: 12px; }
+.card-body { margin: 12px 0; }
+.tag {
+    font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 6px;
+    background: rgba(251, 191, 36, 0.15); color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3); margin-right: 4px; display: inline-block;
+}
+.sets-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.set-item { background: #111827; padding: 4px 8px; border-radius: 6px; font-size: 13px; }
+.more-sets { color: #6b7280; font-size: 13px; align-self: center; }
+.notes { margin-top: 8px; font-size: 13px; color: #6b7280; font-style: italic; }
+.card-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Графики */
+.chart-container { position: relative; height: 250px; margin-bottom: 20px; background: #000000; padding: 10px; border-radius: 16px; border: 1px solid #1f2937; }
+
+/* Модальные окна */
+.modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    align-items: center; justify-content: center; z-index: 100; padding: 16px;
+}
+.modal-content {
+    background: #000000; width: 100%; max-width: 500px;
+    border-radius: 16px; padding: 20px; position: relative;
+    border: 1px solid #1f2937; max-height: 90vh; overflow-y: auto;
+}
+.modal .close { position: absolute; right: 16px; top: 16px; cursor: pointer; color: #6b7280; font-size: 20px; }
+
+/* Кнопки */
+button, .btn {
+    border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
+}
+.btn-primary { background: #fbbf24; color: #000; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-outline { background: transparent; border: 1px solid #1f2937; color: #ffffff; }
+.btn-danger { background: #ef4444; color: white; }
+
+/* Формы ввода */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; margin-bottom: 4px; font-size: 14px; color: #6b7280; }
 
 /* Контейнер приложения */
 #app {
@@ -24,6 +137,23 @@ body {
     width: 100%;
     padding: 20px;
     flex: 1;
+}
+
+h1 {
+    text-align: center;
+    margin: 0 auto;    
+    margin-bottom: 30px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid gold;
+    color: white;
+}
+
+.app-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* =========================================
@@ -41,7 +171,6 @@ body {
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
-    background-color: #e5e7eb;
     color: #4b5563;
     cursor: pointer;
     font-weight: 600;
@@ -55,36 +184,20 @@ body {
     background-color: #d1d5db;
 }
 
-.nav-btn.active {
-    background-color: #3b82f6;
-    color: white;
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
-}
-
-.btn-primary {
-    background-color: #10b981 !important;
-    color: white !important;
-}
-.btn-primary:hover {
-    background-color: #059669 !important;
-}
 
 /* =========================================
    3. Секции (Home, Stats, Add)
    ========================================= */
-section {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
+
 
 h2 {
+    position: sticky;
+    top: 0;
     margin-bottom: 20px;
-    color: #1f2937;
+    color: white;
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
+    text-align: center;
 }
 
 /* =========================================
@@ -92,16 +205,6 @@ h2 {
    ========================================= */
 #list-workouts {
     list-style: none;
-}
-
-.workout-card {
-    background: #fff;
-    border-left: 5px solid #3b82f6;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .workout-card:hover {

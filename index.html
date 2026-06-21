@@ -3,206 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FitTrack — Учёт тренировок</title>
-    <!-- Иконки -->
+    <title>Дневник тренировок</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Графики -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Уведомления -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Манифест для PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0f19">
-    <style>
-        /* Вставляем style.css сюда для удобства копирования (в реальном проекте вынесите в css/style.css) */
-        :root {
-            --bg-body: #0b0f19;
-            --bg-card: #000000;
-            --bg-input: #1f2937;
-            --bg-element: #111827;
-            --color-yellow: #fbbf24;
-            --color-yellow-hover: #f59e0b;
-            --color-text: #ffffff;
-            --color-muted: #6b7280;
-            --color-border: #1f2937;
-            --color-red: #ef4444;
-            --color-red-bg: rgba(239, 68, 68, 0.1);
-            --shadow: 0 10px 25px -5px rgba(0,0,0,0.6);
-            --radius: 16px;
-        }
-        [data-theme="light"] {
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --bg-input: #e5e7eb;
-            --bg-element: #f9fafb;
-            --color-text: #111827;
-            --color-muted: #4b5563;
-            --color-border: #d1d5db;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg-body);
-            color: var(--color-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        /* Навигация */
-        .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0; width: 100%;
-            background: var(--bg-card);
-            border-top: 1px solid var(--color-border);
-            display: flex; justify-content: space-around;
-            padding: 8px 0; z-index: 50;
-        }
-        .nav-btn {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--color-muted); font-size: 12px;
-            gap: 4px; cursor: pointer;
-        }
-        .nav-btn.active, .nav-btn:hover { color: var(--color-yellow); }
-        .nav-btn i { font-size: 20px; }
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 
-        /* Контент */
-        #app-container {
-            flex: 1; padding-bottom: 70px; padding: 16px;
-            overflow-y: auto;
-        }
-        /* Pull-to-refresh имитация */
-        .pull-container { position: relative; }
-        .refresh-indicator {
-            position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 40px; border: 2px solid var(--color-muted);
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite; opacity: 0; display: none;
-        }
-        .pulling .refresh-indicator { display: block; opacity: 0.6; }
-        @keyframes spin { 100% { transform: translateX(-50%) rotate(360deg); } }
-
-        /* Карточка тренировки */
-        .workout-card {
-            background: var(--bg-card); border: 1px solid var(--color-border);
-            border-radius: var(--radius); overflow: hidden; margin-bottom: 16px;
-            box-shadow: var(--shadow); transition: transform 0.2s;
-        }
-        .workout-card:active { transform: scale(0.98); }
-        .card-header { padding: 16px; border-bottom: 1px solid var(--color-border); }
-        .card-title { font-size: 1.2rem; font-weight: 900; color: var(--color-yellow); margin-bottom: 4px; }
-        .card-meta { font-size: 12px; color: var(--color-muted); display: flex; gap: 8px; flex-wrap: wrap; }
-        .tag {
-            font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 6px;
-            background: rgba(251, 191, 36, 0.15); color: var(--color-yellow);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-        .card-body { padding: 16px; }
-        .sets-list { display: flex; flex-direction: column; gap: 8px; }
-        .set-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 12px; background: var(--bg-element); border-radius: 8px;
-        }
-        .img-preview {
-            width: 100%; height: 200px; object-fit: cover; background: #000;
-        }
-        .notes-block { margin-top: 12px; font-size: 13px; color: var(--color-muted); }
-
-        /* Модальное окно */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            display: none; align-items: center; justify-content: center; z-index: 100;
-        }
-        .modal-overlay.show { display: flex; }
-        .modal {
-            background: var(--bg-card); width: 90%; max-width: 500px;
-            border-radius: var(--radius); padding: 20px; position: relative;
-        }
-        .close-modal { position: absolute; right: 16px; top: 16px; cursor: pointer; color: var(--color-muted); }
-
-        /* Кнопки */
-        button {
-            border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700;
-            cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-primary { background: var(--color-yellow); color: #000; }
-        .btn-primary:hover { background: var(--color-yellow-hover); }
-        .btn-outline {
-            background: transparent; border: 1px solid var(--color-border);
-            color: var(--color-text);
-        }
-        .btn-danger { background: var(--color-red); color: white; }
-        .btn-danger:hover { background: #d63031; }
-
-        /* Скелетон */
-        .skeleton { background: var(--bg-element); height: 120px; border-radius: var(--radius); margin-bottom: 16px; animation: shimmer 2s infinite; }
-        @keyframes shimmer { 0% { background: linear-gradient(90deg, var(--bg-element), #1a202c, var(--bg-element)); background-size: 200% 100%; background-position: -100% 0; } 100% { background-position: 100% 0; } }
-
-        /* Toast (упрощённо) */
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--bg-card); color: var(--color-text); padding: 12px 20px;
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            opacity: 0; pointer-events: none; transition: transform 0.3s, opacity 0.3s; z-index: 200;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-        /* Календарь */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
-        .cal-day {
-            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-            font-size: 12px; border-radius: 6px; color: var(--color-text);
-        }
-        .cal-today { background: var(--color-yellow); color: #000; }
-        .cal-has-workout { background: rgba(251,191,36,0.2); }
-
-        /* Калькулятор виджет */
-        .calc-display {
-            text-align: right; background: var(--bg-input); padding: 12px;
-            border-radius: 12px; margin-bottom: 12px; font-family: monospace; font-size: 24px;
-        }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-        .calc-btn {
-            padding: 12px; border-radius: 8px; font-weight: bold;
-            background: var(--bg-element); color: var(--color-text);
-        }
-        .calc-btn.op { background: var(--color-yellow); color: #000; }
-        .calc-btn.clear { background: var(--color-red); color: white; }
-    </style>
 </head>
 <body>
 
-    <!-- Навигация -->
-    <div class="nav-bottom">
-        <div class="nav-btn active" data-page="workouts"><i class="fa-solid fa-dumbbell"></i><span>Тренировки</span></div>
-        <div class="nav-btn" data-page="stats"><i class="fa-solid fa-chart-line"></i><span>Статистика</span></div>
-        <div class="nav-btn" data-page="settings"><i class="fa-solid fa-gear"></i><span>Настройки</span></div>
+    <div id="nav" class="nav-bottom"></div>
+
+    <div id="app" class="app-container">
+        <h1>Дневник тренировок</h1>
+        <section id="section-home" class="app-section">
+            <div class="search-filter-bar">
+                <input type="text" id="input-search" class="form-control" placeholder="Поиск тренировок...">
+                <select id="select-date-filter" class="form-control">
+                    <option value="">Все время</option>
+                    <option value="today">Сегодня</option>
+                    <option value="week">За последнюю неделю</option>
+                    <option value="month">За последний месяц</option>
+                </select>
+                <div class="muscle-filters">
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Грудь</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Спина</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Ноги</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Плечи</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Руки</span></label>
+                </div>
+            </div>
+            <ul id="list-workouts" style="list-style: none;"></ul>
+        </section>
+
+        <section id="section-stats" class="app-section">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Всего тренировок</small>
+                    <h2 id="stat-total">0</h2>
+                </div>
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Тоннаж (кг)</small>
+                    <h2 id="stat-weight">0</h2>
+                </div>
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Всего подходов</small>
+                    <h2 id="stat-sets">0</h2>
+                </div>
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Калории</small>
+                    <h2 id="stat-calories">0</h2>
+                </div>
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Серия (дней)</small>
+                    <h2 id="stat-streak">0</h2>
+                </div>
+                <div class="workout-card" style="margin:0; text-align:center;">
+                    <small style="color:var(--color-muted)">Текущий вес</small>
+                    <h2 id="stat-current-weight">Нет данных</h2>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="chart-stats"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-weight"></canvas>
+            </div>
+        </section>
+
+        <section id="section-add" class="app-section">
+            <div class="workout-card">
+                <h2>Новая тренировка</h2>
+                <form id="form-add-workout">
+                    <div class="form-group">
+                        <label>Название упражнения / тренировки</label>
+                        <input type="text" name="title-add" class="form-control" required placeholder="Например: Жим лежа">
+                    </div>
+                    <div class="form-group">
+                        <label>Выбрать из шаблонов</label>
+                        <select id="exercise-select-add" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата</label>
+                        <input type="date" name="date-add" class="form-control">
+                    </div>
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1;">
+                            <label>Начало</label>
+                            <input type="time" name="start-add" class="form-control">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Конец</label>
+                            <input type="time" name="end-add" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1;">
+                            <label>Вес снаряда (кг)</label>
+                            <input type="number" step="0.1" name="weight-add" class="form-control" placeholder="0">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Повторения</label>
+                            <input type="number" name="reps-add" class="form-control" placeholder="0">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Отдых (сек)</label>
+                            <input type="number" name="rest-add" class="form-control" value="60">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Расход калорий (ккал)</label>
+                        <input type="number" name="calories-add" class="form-control" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Собственный вес тела (кг)</label>
+                        <input type="number" step="0.1" name="body-weight-add" class="form-control" placeholder="0" value="65">
+                    </div>
+                    <div class="form-group">
+                        <label>Заметки</label>
+                        <textarea name="notes-add" class="form-control" rows="3" placeholder="Опишите самочувствие или особенности..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;">
+                        <i class="fas fa-save"></i> Сохранить тренировку
+                    </button>
+                </form>
+            </div>
+        </section>
     </div>
 
-    <div id="app-container" class="pull-container">
-        <!-- Контент будет рендериться через JS -->
-        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-        <div class="refresh-indicator"><i class="fa-solid fa-rotate"></i></div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="toast"><span id="toast-msg">Сообщение</span></div>
-
-    <!-- Модальное окно (шаблон) -->
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal">
-            <i class="fa-solid fa-xmark close-modal"></i>
-            <div id="modal-content"></div>
+    <div id="modal-edit" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 style="color:var(--color-yellow); margin-bottom:15px;">Изменить тренировку</h2>
+            <form id="form-edit-workout">
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="edit-title" name="edit-title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Выбрать упражнение</label>
+                    <select id="exercise-select-edit" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Дата</label>
+                    <input type="date" id="edit-date" name="edit-date" class="form-control">
+                </div>
+                <div class="form-group" style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label>Начало</label>
+                        <input type="time" id="edit-start" name="edit-start" class="form-control">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Конец</label>
+                        <input type="time" id="edit-end" name="edit-end" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label>Вес (кг)</label>
+                        <input type="number" step="0.1" id="edit-weight-add" name="edit-weight-add" class="form-control">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Повторы</label>
+                        <input type="number" id="edit-reps-add" name="edit-reps-add" class="form-control">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Отдых (с)</label>
+                        <input type="number" id="edit-rest-add" name="edit-rest-add" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Калории</label>
+                    <input type="number" id="edit-calories" name="edit-calories" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Вес тела (кг)</label>
+                    <input type="number" step="0.1" id="edit-body-weight" name="edit-body-weight" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Заметки</label>
+                    <textarea id="edit-notes" name="edit-notes" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+                    <i class="fas fa-check"></i> Применить изменения
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- Скрипты -->
-    <script src="js/theme.js"></script>
     <script src="js/workouts.js"></script>
-    <script src="js/stats.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/import-export.js"></script>
-    <script src="js/calculator.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

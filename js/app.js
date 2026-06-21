@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionHome = document.getElementById('section-home');
     const sectionStats = document.getElementById('section-stats');
     const sectionAdd = document.getElementById('section-add');
-    const sectionSettings = document.getElementById('section-settings');
 
     // Формы
     const formAddWorkout = document.getElementById('form-add-workout');
@@ -94,34 +93,39 @@ document.addEventListener('DOMContentLoaded', () => {
         return current === page ? 'active' : '';
     }
 
+    // Определяем текущую страницу по видимости секций
     function getCurrentPage() {
-        if (sectionHome.style.display === 'block') return 'home';
-        if (sectionStats.style.display === 'block') return 'stats';
-        if (sectionAdd.style.display === 'block') return 'add';
+        if (sectionHome && sectionHome.style.display === 'block') return 'home';
+        if (sectionStats && sectionStats.style.display === 'block') return 'stats';
+        if (sectionAdd && sectionAdd.style.display === 'block') return 'add';
         return 'home';
     }
 
-    window.app = {
-        navigateTo: (page) => {
-            // Скрываем все секции
-            [sectionHome, sectionStats, sectionAdd].forEach(el => el.style.display = 'none');
-            
-            // Показываем нужную
-            if (page === 'home') sectionHome.style.display = 'block';
-            if (page === 'stats') {
-                sectionStats.style.display = 'block';
-                renderStats(); // Обновляем графики при входе
-            }
-            if (page === 'add') sectionAdd.style.display = 'block';
-
-            renderNavigation();
+    // Функция для переключения между страницами
+    function navigateTo(page) {
+        // Скрываем все секции
+        [sectionHome, sectionStats, sectionAdd].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+        
+        // Показываем нужную
+        if (page === 'home' && sectionHome) sectionHome.style.display = 'block';
+        if (page === 'stats' && sectionStats) {
+            sectionStats.style.display = 'block';
+            renderStats(); // Обновляем графики при входе
         }
-    };
+        if (page === 'add' && sectionAdd) sectionAdd.style.display = 'block';
+
+        renderNavigation();
+    }
+
+    // Экспортируем навигацию в глобальную область видимости для onclick в HTML
+    window.app = window.app || {};
+    window.app.navigateTo = navigateTo;
 
     // --- Работа с данными и рендеринг ---
-
     function loadCustomExercisesToSelects() {
-        const exercises = getCustomExercises();
+        const exercises = getCustomExercises ? getCustomExercises() : [];
         const selects = [
             document.getElementById('exercise-select-add'),
             document.getElementById('exercise-select-edit')
@@ -129,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         selects.forEach(select => {
             if (!select) return;
-            select.innerHTML = '<option value="">Выберите упражнение</option>';
+            select.innerHTML = '<option value="">Выберите мышцу</option>';
             exercises.forEach(ex => {
                 const opt = document.createElement('option');
                 opt.value = ex;
@@ -139,13 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Заполняем чекбоксы мышц
-        const tags = getMuscleTags();
+        const tags = getMuscleTags ? getMuscleTags() : [];
         checkboxesMuscle.forEach(cb => {
             const label = cb.nextElementSibling;
             if (label && tags.includes(label.textContent)) {
                 cb.disabled = false;
             } else {
-                cb.disabled = true; // Или скрыть, если нужно
+                cb.disabled = true;
             }
         });
     }
@@ -156,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = filteredData || getAllWorkouts();
         listWorkouts.innerHTML = '';
 
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             listWorkouts.innerHTML = '<div class="empty-state">Тренировок пока нет. Добавьте первую!</div>';
             return;
         }
@@ -169,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const durationText = w.startTime && w.endTime ? 
                 `${calculateDurationText(w.startTime, w.endTime)}` : 'Без таймера';
             
-            const muscleTagsHtml = w.muscleTags.map(t => `<span class="tag">${t}</span>`).join('');
+            const muscleTagsHtml = w.muscleTags ? w.muscleTags.map(t => `<span class="tag">${t}</span>`).join('') : '';
 
             li.innerHTML = `
                 <div class="card-header">
@@ -179,10 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-body">
                     ${muscleTagsHtml}
                     <div class="sets-preview">
-                        ${w.sets.slice(0, 3).map(s => `
+                        ${w.sets ? w.sets.slice(0, 3).map(s => `
                             <div class="set-item">${s.weight}кг × ${s.reps}</div>
-                        `).join('')}
-                        ${w.sets.length > 3 ? `<span class="more-sets">+${w.sets.length - 3}</span>` : ''}
+                        `).join('') : ''}
+                        ${w.sets && w.sets.length > 3 ? `<span class="more-sets">+${w.sets.length - 3}</span>` : ''}
                     </div>
                     ${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
                 </div>
@@ -207,12 +211,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const diff = (e - s) / 60000; // минуты
         const h = Math.floor(diff / 60);
         const m = diff % 60;
-        return `${h}ч ${m}м`;
+        return h > 0 ? `${h}ч ${m}м` : `${m}м`;
     }
 
     // --- Графики (Chart.js) ---
     function initCharts() {
-        if (!canvasStats || !canvasWeight) return;
+        if (!canvasStats || !canvasWeight || typeof Chart === 'undefined') return;
 
         // График статистики (столбчатый)
         chartStatsInstance = new Chart(canvasStats, {
@@ -249,15 +253,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderStats() {
+        if (!calculateStats) return;
         const stats = calculateStats();
         
-        // Обновляем цифры в DOM (если есть элементы с id)
-        document.getElementById('stat-total')?.textContent = stats.totalWorkouts;
-        document.getElementById('stat-weight')?.textContent = stats.totalWeightLifted;
-        document.getElementById('stat-sets')?.textContent = stats.totalSets;
-        document.getElementById('stat-calories')?.textContent = stats.totalCalories;
-        document.getElementById('stat-streak')?.textContent = stats.streak;
-        document.getElementById('stat-current-weight')?.textContent = stats.currentWeight ? `${stats.currentWeight} кг` : 'Нет данных';
+        // Обновляем цифры в DOM
+        if (document.getElementById('stat-total')) document.getElementById('stat-total').textContent = stats.totalWorkouts;
+        if (document.getElementById('stat-weight')) document.getElementById('stat-weight').textContent = stats.totalWeightLifted;
+        if (document.getElementById('stat-sets')) document.getElementById('stat-sets').textContent = stats.totalSets;
+        if (document.getElementById('stat-calories')) document.getElementById('stat-calories').textContent = stats.totalCalories;
+        if (document.getElementById('stat-streak')) document.getElementById('stat-streak').textContent = stats.streak;
+        if (document.getElementById('stat-current-weight')) {
+            document.getElementById('stat-current-weight').textContent = stats.currentWeight ? `${stats.currentWeight} кг` : 'Нет данных';
+        }
 
         // Обновляем график статистики
         if (chartStatsInstance) {
@@ -269,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Обновляем график веса
         if (chartWeightInstance && stats.weightHistory) {
-             // weightHistory уже в формате {x, y} благодаря getWeightHistory()
              const history = stats.weightHistory;
              chartWeightInstance.data.labels = history.map(h => h.x);
              chartWeightInstance.data.datasets[0].data = history.map(h => h.y);
@@ -277,44 +283,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Обработчики событий (Event Listeners) ---
+    // --- Обработчики событий ---
     function setupEventListeners() {
-        // Поиск
         if (inputSearch) {
             inputSearch.addEventListener('input', (e) => {
                 const query = e.target.value;
-                const filtered = searchWorkouts(query);
+                const filtered = searchWorkouts ? searchWorkouts(query) : [];
                 renderWorkoutsList(filtered);
             });
         }
 
-        // Фильтры даты
         if (selectDateFilter) {
-            selectDateFilter.addEventListener('change', (e) => {
-                applyFilters();
-            });
+            selectDateFilter.addEventListener('change', () => applyFilters());
         }
 
-        // Фильтры мышц
         checkboxesMuscle.forEach(cb => {
             cb.addEventListener('change', () => applyFilters());
         });
 
-        // Отправка формы добавления
-        if (formAddWorkout) {
-            formAddWorkout.addEventListener('submit', handleAddWorkout);
-        }
+        if (formAddWorkout) formAddWorkout.addEventListener('submit', handleAddWorkout);
+        if (formEditWorkout) formEditWorkout.addEventListener('submit', handleEditWorkout);
 
-        // Отправка формы редактирования
-        if (formEditWorkout) {
-            formEditWorkout.addEventListener('submit', handleEditWorkout);
-        }
-
-        // Закрытие модалок
         if (btnCloseEdit) btnCloseEdit.addEventListener('click', () => modalEdit.style.display = 'none');
         if (btnCloseAdd) btnCloseAdd.addEventListener('click', () => modalAdd.style.display = 'none');
 
-        // Клик вне модалки для закрытия
         window.addEventListener('click', (e) => {
             if (e.target === modalEdit) modalEdit.style.display = 'none';
             if (e.target === modalAdd) modalAdd.style.display = 'none';
@@ -322,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyFilters() {
+        if (!filterWorkouts) return;
         const dateFilter = selectDateFilter ? selectDateFilter.value : null;
         const muscleFilters = Array.from(checkboxesMuscle)
             .filter(cb => cb.checked)
@@ -332,18 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CRUD операции через UI ---
-
     window.app.deleteWorkout = (id) => {
-        if(!confirm('Вы уверены, что хотите удалить эту тренировку?')) return;
-        deleteWorkout(id);
-        renderWorkoutsList(); // Перерисовать список
-        if(getCurrentPage() === 'stats') renderStats(); // Обновить графики если мы в статистике
+        if (!confirm('Вы уверены, что хотите удалить эту тренировку?')) return;
+        if (deleteWorkout) deleteWorkout(id);
+        renderWorkoutsList();
+        if (getCurrentPage() === 'stats') renderStats();
         showToast('Тренировка удалена', 'success');
     };
 
     window.app.openEditModal = (id) => {
         currentEditId = id;
-        const workout = getAllWorkouts().find(w => w.id === id);
+        const workouts = getAllWorkouts ? getAllWorkouts() : [];
+        const workout = workouts.find(w => w.id === id);
         if (!workout) return;
 
         // Заполнение полей
@@ -357,24 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Чекбоксы мышц
         Array.from(checkboxesMuscle).forEach(cb => {
             const label = cb.nextElementSibling.textContent;
-            cb.checked = workout.muscleTags.includes(label);
+            cb.checked = workout.muscleTags ? workout.muscleTags.includes(label) : false;
         });
 
-        modalEdit.style.display = 'block';
+        if (modalEdit) modalEdit.style.display = 'block';
     };
 
-        function handleAddWorkout(e) {
+    function handleAddWorkout(e) {
         e.preventDefault();
-        
         const formData = new FormData(formAddWorkout);
         const setsData = [];
-        
-        // --- ЛОГИКА СБОРА ПОДХОДОВ ---
-        // Вариант А: Если у вас в HTML есть инпуты с именами вида "sets[0][weight]", "sets[1][reps]" (редко для простых форм)
-        // Вариант Б (Самый частый): Вы генерируете инпуты динамически с уникальными ID или name, например: weight-0, reps-0, weight-1, reps-1...
-        
-        // Пример реализации для динамических полей с паттерном name="weight-0", "reps-0" и т.д.
-        // Если у вас статическая форма с одним подходом, просто используйте код из предыдущего ответа.
         
         let i = 0;
         while (true) {
@@ -382,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const repsVal = formData.get(`reps-${i}`);
             const restVal = formData.get(`rest-${i}`);
 
-            // Если поля нет или они пустые — выходим из цикла (значит, подходы закончились)
             if (!weightVal && !repsVal) break;
 
             const w = parseFloat(weightVal) || 0;
@@ -390,27 +374,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const rest = parseInt(restVal) || 60;
 
             if (w > 0 && r > 0) {
-                setsData.push({ 
-                    weight: w, 
-                    reps: r, 
-                    restSec: rest 
-                });
+                setsData.push({ weight: w, reps: r, restSec: rest });
             }
             i++;
         }
 
-        // Фоллбэк: если динамических полей не найдено, берем статические (на случай простой формы)
         if (setsData.length === 0) {
             const w = parseFloat(formData.get('weight-add')) || 0;
             const r = parseInt(formData.get('reps-add')) || 0;
             const rest = parseInt(formData.get('rest-add')) || 60;
             if (w > 0 && r > 0) setsData.push({ weight: w, reps: r, restSec: rest });
         }
-        // ------------------------------
 
         const newWorkout = {
             title: formData.get('title-add'),
-            date: formData.get('date-add') || new Date().toISOString().split('T')[0], // По умолчанию сегодня
+            date: formData.get('date-add') || new Date().toISOString().split('T')[0],
             startTime: formData.get('start-add'),
             endTime: formData.get('end-add'),
             notes: formData.get('notes-add'),
@@ -420,76 +398,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 .map(cb => cb.nextElementSibling.textContent),
             sets: setsData,
             bodyWeight: parseFloat(formData.get('body-weight-add')) || null,
-            type: formData.get('type-add') || 'strength' // 'strength' или 'cardio'
+            type: formData.get('type-add') || 'strength'
         };
 
-        // Базовая валидация перед отправкой
-        if (!newWorkout.title.trim()) {
+        if (!newWorkout.title || !newWorkout.title.trim()) {
             showToast('Название тренировки обязательно!', 'error');
             return;
         }
-        if (newWorkout.sets.length === 0 && newWorkout.type === 'strength') {
-             showToast('Добавьте хотя бы один силовой подход!', 'warning');
-             // Можно разрешить создание пустой тренировки, если это кардио, но для силы нужен вес/повторы
-        }
 
         try {
-            addWorkout(newWorkout);
+            if (addWorkout) addWorkout(newWorkout);
             formAddWorkout.reset();
-            modalAdd.style.display = 'none';
+            if (modalAdd) modalAdd.style.display = 'none';
             renderWorkoutsList();
             
-            if (getCurrentPage() === 'stats') {
-                renderStats();
-            }
+            if (getCurrentPage() === 'stats') renderStats();
             
             showToast('Тренировка успешно добавлена!', 'success');
-            
-            // Перезагружаем списки упражнений и мышц, вдруг пользователь добавил новое прямо в форме
             loadCustomExercisesToSelects(); 
         } catch (error) {
             console.error('Ошибка при добавлении тренировки:', error);
-            showToast('Не удалось сохранить. Проверьте консоль или место в LocalStorage.', 'error');
+            showToast('Не удалось сохранить данные.', 'error');
         }
     }
-
-        function showToast(message, type = 'info') {
-        // Создаем элемент уведомления
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px; padding: 15px 25px; 
-            border-radius: 8px; color: white; font-weight: bold; z-index: 9999;
-            animation: slideIn 0.3s ease-out forwards;
-        `;
-        
-        // Цвета
-        if (type === 'success') toast.style.background = '#10b981'; // Зеленый
-        else if (type === 'error') toast.style.background = '#ef4444'; // Красный
-        else if (type === 'warning') toast.style.background = '#f59e0b'; // Оранжевый
-        else toast.style.background = '#3b82f6'; // Синий
-
-        document.body.appendChild(toast);
-
-        // Удаляем через 3 секунды
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.5s';
-            setTimeout(() => toast.remove(), 500);
-        }, 3000);
-    }
-});
-
-function escapeHtml(text) {
-    if (!text) return '';
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
 
     function handleEditWorkout(e) {
         e.preventDefault();
@@ -502,7 +433,6 @@ function escapeHtml(text) {
         const formData = new FormData(formEditWorkout);
         const setsData = [];
         
-        // Сбор динамических подходов (аналогично добавлению)
         let i = 0;
         while (true) {
             const weightVal = formData.get(`edit-weight-${i}`);
@@ -516,16 +446,11 @@ function escapeHtml(text) {
             const rest = parseInt(restVal) || 60;
 
             if (w > 0 && r > 0) {
-                setsData.push({ 
-                    weight: w, 
-                    reps: r, 
-                    restSec: rest 
-                });
+                setsData.push({ weight: w, reps: r, restSec: rest });
             }
             i++;
         }
 
-        // Фоллбэк для статической формы (если динамических нет)
         if (setsData.length === 0) {
             const w = parseFloat(formData.get('edit-weight-add')) || 0;
             const r = parseInt(formData.get('edit-reps-add')) || 0;
@@ -534,7 +459,7 @@ function escapeHtml(text) {
         }
 
         const updatedWorkout = {
-            id: currentEditId, // Важно: передаем ID для обновления
+            id: currentEditId,
             title: formData.get('edit-title'),
             date: formData.get('edit-date'),
             startTime: formData.get('edit-start'),
@@ -549,19 +474,17 @@ function escapeHtml(text) {
             type: formData.get('edit-type') || 'strength'
         };
 
-        if (!updatedWorkout.title.trim()) {
+        if (!updatedWorkout.title || !updatedWorkout.title.trim()) {
             showToast('Название тренировки обязательно!', 'error');
             return;
         }
 
         try {
-            updateWorkout(updatedWorkout);
-            modalEdit.style.display = 'none';
+            if (updateWorkout) updateWorkout(updatedWorkout);
+            if (modalEdit) modalEdit.style.display = 'none';
             renderWorkoutsList();
             
-            if (getCurrentPage() === 'stats') {
-                renderStats();
-            }
+            if (getCurrentPage() === 'stats') renderStats();
             
             showToast('Тренировка успешно обновлена!', 'success');
             loadCustomExercisesToSelects(); 
@@ -570,29 +493,41 @@ function escapeHtml(text) {
             showToast('Не удалось обновить тренировку.', 'error');
         }
     }
+});
 
-        function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px; padding: 15px 25px; 
-            border-radius: 8px; color: white; font-weight: bold; z-index: 9999;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-out forwards;
-        `;
-        
-        // Цвета
-        if (type === 'success') toast.style.background = '#10b981';       // Зеленый
-        else if (type === 'error') toast.style.background = '#ef4444';     // Красный
-        else if (type === 'warning') toast.style.background = '#f59e0b';   // Оранжевый
-        else toast.style.background = '#3b82f6';                           // Синий
+// --- Глобальные вспомогательные функции ---
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-        document.body.appendChild(toast);
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    
+    toast.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 15px 25px; 
+        border-radius: 8px; color: white; font-weight: bold; z-index: 9999;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-out forwards;
+    `;
+    
+    if (type === 'success') toast.style.background = '#10b981';
+    else if (type === 'error') toast.style.background = '#ef4444';
+    else if (type === 'warning') toast.style.background = '#f59e0b';
+    else toast.style.background = '#3b82f6';
 
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.5s';
-            setTimeout(() => toast.remove(), 500);
-        }, 3000);
-    }
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
