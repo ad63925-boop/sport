@@ -9,8 +9,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0f19">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body>
 
@@ -27,6 +25,7 @@
                     <option value="week">За последнюю неделю</option>
                     <option value="month">За последний месяц</option>
                 </select>
+                <div id="calendar-container"></div>
                 <div class="muscle-filters">
                     <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Грудь</span></label>
                     <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Спина</span></label>
@@ -39,29 +38,29 @@
         </section>
 
         <section id="section-stats" class="app-section">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Всего тренировок</small>
+            <div class="stats-grid-container">
+                <div class="workout-card stat-workout-card">
+                    <small>Всего тренировок</small>
                     <h2 id="stat-total">0</h2>
                 </div>
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Тоннаж (кг)</small>
+                <div class="workout-card stat-workout-card">
+                    <small>Тоннаж (кг)</small>
                     <h2 id="stat-weight">0</h2>
                 </div>
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Всего подходов</small>
+                <div class="workout-card stat-workout-card">
+                    <small>Всего подходов</small>
                     <h2 id="stat-sets">0</h2>
                 </div>
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Калории</small>
+                <div class="workout-card stat-workout-card">
+                    <small>Калории</small>
                     <h2 id="stat-calories">0</h2>
                 </div>
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Серия (дней)</small>
+                <div class="workout-card stat-workout-card">
+                    <small>Серия (дней)</small>
                     <h2 id="stat-streak">0</h2>
                 </div>
-                <div class="workout-card" style="margin:0; text-align:center;">
-                    <small style="color:var(--color-muted)">Текущий вес</small>
+                <div class="workout-card stat-workout-card">
+                    <small>Текущий вес</small>
                     <h2 id="stat-current-weight">Нет данных</h2>
                 </div>
             </div>
@@ -86,6 +85,18 @@
                         <label>Название упражнения / тренировки</label>
                         <input type="text" name="title-add" class="form-control" required placeholder="Например: Жим лежа">
                     </div>
+
+                <div class="form-group">
+                    <label>Целевые группы мышц</label>
+                    <div class="muscle-filters">
+                        <label class="muscle-label"><input type="checkbox" name="muscleTags" value="Грудь"> <span>Грудь</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="muscleTags" value="Спина"> <span>Спина</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="muscleTags" value="Ноги"> <span>Ноги</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="muscleTags" value="Плечи"> <span>Плечи</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="muscleTags" value="Руки"> <span>Руки</span></label>
+                    </div>
+                </div>
+
                     <div class="form-group">
                         <label>Выбрать из шаблонов</label>
                         <select id="exercise-select-add" class="form-control"></select>
@@ -94,29 +105,22 @@
                         <label>Дата</label>
                         <input type="date" name="date-add" class="form-control">
                     </div>
-                    <div class="form-group" style="display:flex; gap:10px;">
-                        <div style="flex:1;">
+                    <div class="form-group form-group-row">
+                        <div class="flex-1">
                             <label>Начало</label>
                             <input type="time" name="start-add" class="form-control">
                         </div>
-                        <div style="flex:1;">
+                        <div class="flex-1">
                             <label>Конец</label>
                             <input type="time" name="end-add" class="form-control">
                         </div>
                     </div>
-                    <div class="form-group" style="display:flex; gap:10px;">
-                        <div style="flex:1;">
-                            <label>Вес снаряда (кг)</label>
-                            <input type="number" step="0.1" name="weight-add" class="form-control" placeholder="0">
-                        </div>
-                        <div style="flex:1;">
-                            <label>Повторения</label>
-                            <input type="number" name="reps-add" class="form-control" placeholder="0">
-                        </div>
-                        <div style="flex:1;">
-                            <label>Отдых (сек)</label>
-                            <input type="number" name="rest-add" class="form-control" value="60">
-                        </div>
+                    <div class="form-group full-width">
+                        <label>Подходы</label>
+                        <div id="add-sets-container"></div>
+                        <button type="button" id="btn-add-set" class="btn btn-outline btn-full-width">
+                            <i class="fas fa-plus"></i> Добавить подход
+                        </button>
                     </div>
                     <div class="form-group">
                         <label>Расход калорий (ккал)</label>
@@ -130,7 +134,7 @@
                         <label>Заметки</label>
                         <textarea name="notes-add" class="form-control" rows="3" placeholder="Опишите самочувствие или особенности..."></textarea>
                     </div>
-                    <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;">
+                    <button type="submit" class="btn-primary btn-full-width">
                         <i class="fas fa-save"></i> Сохранить тренировку
                     </button>
                 </form>
@@ -142,8 +146,8 @@
         <div class="modal-content">
 
             <span class="close">&times;</span>
-            <h2 style="color:var(--color-yellow); margin-bottom:15px;">Изменить тренировку</h2>
-            <form id="form-edit-workout">
+            <h2>Изменить тренировку</h2>
+            <form id="form-edit-workout" class="form-edits-workout">
                 <div class="form-group">
                 <label>Ссылка на фото (URL)</label>
                 <input type="url" id="edit-image" name="edit-image" class="form-control" placeholder="https://example.com/image.jpg">
@@ -158,32 +162,35 @@
                     <select id="exercise-select-edit" class="form-control"></select>
                 </div>
                 <div class="form-group">
+                    <label>Целевые группы мышц</label>
+                    <div class="muscle-filters">
+                        <label class="muscle-label"><input type="checkbox" name="edit-muscleTags" value="Грудь"> <span>Грудь</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="edit-muscleTags" value="Спина"> <span>Спина</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="edit-muscleTags" value="Ноги"> <span>Ноги</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="edit-muscleTags" value="Плечи"> <span>Плечи</span></label>
+                        <label class="muscle-label"><input type="checkbox" name="edit-muscleTags" value="Руки"> <span>Руки</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>Дата</label>
                     <input type="date" id="edit-date" name="edit-date" class="form-control">
                 </div>
-                <div class="form-group" style="display:flex; gap:10px;">
-                    <div style="flex:1;">
+                <div class="form-group form-group-row">
+                    <div class="flex-1">
                         <label>Начало</label>
                         <input type="time" id="edit-start" name="edit-start" class="form-control">
                     </div>
-                    <div style="flex:1;">
+                    <div class="flex-1">
                         <label>Конец</label>
                         <input type="time" id="edit-end" name="edit-end" class="form-control">
                     </div>
                 </div>
-                <div class="form-group" style="display:flex; gap:10px;">
-                    <div style="flex:1;">
-                        <label>Вес (кг)</label>
-                        <input type="number" step="0.1" id="edit-weight-add" name="edit-weight-add" class="form-control">
-                    </div>
-                    <div style="flex:1;">
-                        <label>Повторы</label>
-                        <input type="number" id="edit-reps-add" name="edit-reps-add" class="form-control">
-                    </div>
-                    <div style="flex:1;">
-                        <label>Отдых (с)</label>
-                        <input type="number" id="edit-rest-add" name="edit-rest-add" class="form-control">
-                    </div>
+                <div class="form-group full-width">
+                    <label>Подходы</label>
+                    <div id="edit-sets-container"></div>
+                    <button type="button" id="btn-edit-add-set" class="btn btn-outline btn-full-width">
+                        <i class="fas fa-plus"></i> Добавить подход
+                    </button>
                 </div>
                 <div class="form-group">
                     <label>Калории</label>
@@ -197,12 +204,17 @@
                     <label>Заметки</label>
                     <textarea id="edit-notes" name="edit-notes" class="form-control" rows="2"></textarea>
                 </div>
-                <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+                <button type="submit" class="btn-primary btn-full-width">
                     <i class="fas fa-check"></i> Применить изменения
                 </button>
             </form>
         </div>
     </div>
+
+    <div id="photo-overlay" class="photo-fullscreen-overlay" onclick="this.classList.remove('show')">
+    <span class="photo-close">&times;</span>
+    <img id="fullscreen-image" src="" alt="Просмотр фото">
+</div>
 
     <script src="js/workouts.js"></script>
     <script src="js/app.js"></script>

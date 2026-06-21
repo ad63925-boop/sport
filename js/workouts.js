@@ -17,8 +17,22 @@ function initDB() {
         const initialData = {
             workouts: [], // Массив всех тренировок пользователя
             customExercises: [ // Предзаполненный список упражнений
-                'Жим лёжа', 'Приседания', 'Становая тяга', 'Подтягивания', 'Бег', 
-                'Отжимания', 'Тяга штанги в наклоне', 'Жим ногами'
+            'икроножные',
+            'бицепс',
+            'трицепс',
+            'дельтовидные',
+            'трапеции',
+            'широчайшие спины',
+            'ромбовидные',
+            'грудные',
+            'квадрицепс',
+            'бицепс бедра',
+            'ягодичные',
+            'пресс',
+            'косые мышцы живота',
+            'разгибатели спины',
+            'предплечья',
+            'шея'
             ],
             muscleTags: [ // Список тегов групп мышц
                 'Грудь', 'Спина', 'Ноги', 'Руки', 'Плечи', 'Пресс', 'Кардио', 'Ягодицы'
@@ -77,6 +91,7 @@ function addWorkout(workoutData) {
 
     const newWorkout = {
         id,
+        image: workoutData.image || '',
         title: workoutData.title,
         muscleTags: workoutData.muscleTags || [],
         type: workoutData.type || 'strength', // 'strength' или 'cardio'
@@ -89,7 +104,8 @@ function addWorkout(workoutData) {
         sets: sets.map(set => ({
             weight: parseFloat(set.weight) || 0,
             reps: parseInt(set.reps) || 0,
-            restSec: parseInt(set.restSec) || 60
+            restSec: parseInt(set.restSec) || 60,
+            done: !!set.done
         })),
         
         notes: workoutData.notes || '',
@@ -122,6 +138,12 @@ function addWorkout(workoutData) {
  * @returns {Object|null} Обновленная тренировка или null, если не найдена.
  */
 function updateWorkout(id, updatedData) {
+    // Если передан только один аргумент (объект тренировки)
+    if (typeof id === 'object' && id !== null && !updatedData) {
+        updatedData = id;
+        id = updatedData.id;
+    }
+
     const db = getDB();
     if (!db) return null;
 
@@ -152,7 +174,8 @@ function updateWorkout(id, updatedData) {
             return {
                 weight: isNaN(weight) ? 0 : weight,
                 reps: isNaN(reps) ? 0 : reps,
-                restSec: isNaN(restSec) ? 60 : restSec
+                restSec: isNaN(restSec) ? 60 : restSec,
+                done: !!set.done
             };
         }),
         updatedAt: new Date().toISOString()

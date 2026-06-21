@@ -9,12 +9,9 @@ const CACHE_NAME = 'workout-tracker-v1'; // Меняй версию при из�
 const ASSETS_TO_CACHE = [
     '/',
     'index.html',
-    'css/style.css',
     'js/app.js',
     'js/workouts.js',
-    'js/calculator.js',
-    'https://cdn.jsdelivr.net/npm/chart.js', // Если используешь CDN
-    'img/logo.png' // Если есть картинки
+    'https://cdn.jsdelivr.net/npm/chart.js' // Если используешь CDN
 ];
 
 // Установка Service Worker
