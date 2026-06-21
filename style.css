@@ -170,27 +170,6 @@ h2 {
     text-align: center;
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-.card-header h3 {
-    font-size: 1.1rem;
-    color: var(--color-text);
-}
-
-.card-header small {
-    color: var(--color-muted);
-    font-size: 0.85rem;
-}
-
-.card-body {
-    margin: 12px 0;
-}
-
 /* Фото упражнения */
 .img-preview {
     width: calc(100% + 32px);
@@ -203,7 +182,219 @@ h2 {
     margin-bottom: 12px;
 }
 
+/* =========================================
+   5b. Дизайн карточек (wc-*)
+   ========================================= */
+
+/* Горизонтальный разделитель */
+.wc-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 10px 0;
+}
+
+/* Секция с меткой и значением */
+.wc-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Маленькая метка-заголовок */
+.wc-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--color-muted);
+    text-transform: uppercase;
+}
+
+/* Название упражнения */
+.wc-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+/* Значение текстовое */
+.wc-value {
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+/* Блок подходов */
+.wc-sets {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Строка одного подхода */
+.wc-set-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: var(--bg-element);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    font-size: 13.5px;
+}
+
+.wc-set-name {
+    font-weight: 700;
+    color: var(--color-text);
+    min-width: 72px;
+}
+
+.wc-set-reps {
+    color: var(--color-muted);
+    min-width: 52px;
+    text-align: right;
+}
+
+.wc-set-sep {
+    color: var(--border-color);
+    padding: 0 2px;
+}
+
+.wc-set-weight {
+    color: var(--color-primary);
+    font-weight: 700;
+    flex: 1;
+}
+
+/* Строка ИТОГО */
+.wc-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 10px;
+    background: rgba(251, 191, 36, 0.07);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+}
+
+.wc-total-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--color-primary);
+    text-transform: uppercase;
+}
+
+.wc-total-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wc-total-item {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wc-total-item i {
+    color: var(--color-primary);
+    font-size: 12px;
+}
+
+.wc-total-sep {
+    color: var(--border-color);
+}
+
 /* Теги мышц */
+.wc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.wc-tag {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    letter-spacing: 0.3px;
+}
+
+/* Нет данных */
+.wc-no-data {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+}
+
+/* Комментарий */
+.wc-notes {
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    background: var(--bg-element);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+/* Кнопки действий карточки */
+.wc-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.wc-btn-edit,
+.wc-btn-delete {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    border: none;
+}
+
+.wc-btn-edit {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--color-text);
+}
+
+.wc-btn-edit:hover {
+    background: var(--bg-input);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.wc-btn-delete {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--color-danger);
+}
+
+.wc-btn-delete:hover {
+    background: var(--color-danger);
+    color: white;
+}
+
+/* =========================================
+   5c. Старые классы (используются в формах)
+   ========================================= */
 .tag {
     font-size: 11px;
     font-weight: bold;
@@ -215,16 +406,6 @@ h2 {
     margin-right: 6px;
     margin-bottom: 6px;
     display: inline-block;
-}
-
-/* Подходы тренировок в превью */
-.sets-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border-color);
 }
 
 .set-item {
@@ -673,6 +854,107 @@ canvas {
 
 .calendar-day.selected-day::after {
     background-color: #000000;
+}
+
+/* =========================================
+   11b. Блок подсказки прошлой тренировки
+   ========================================= */
+.last-workout-hint {
+    background: linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(251,191,36,0.03) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.lwh-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.lwh-header i {
+    font-size: 13px;
+}
+
+.lwh-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.lwh-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.lwh-date {
+    font-size: 12px;
+    color: var(--color-muted);
+}
+
+.lwh-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.lwh-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--color-primary);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.lwh-sets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.lwh-set {
+    font-size: 12px;
+    background: var(--bg-element);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 3px 9px;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.lwh-totals {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.lwh-totals i {
+    color: var(--color-primary);
+    margin-right: 3px;
+}
+
+.lwh-empty {
+    font-size: 12px;
+    color: var(--color-muted);
+    font-style: italic;
 }
 
 /* =========================================

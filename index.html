@@ -76,6 +76,16 @@
         <section id="section-add" class="app-section">
             <div class="workout-card">
                 <h2>Новая тренировка</h2>
+
+                <!-- Подсказка прошлой тренировки -->
+                <div id="last-workout-hint" class="last-workout-hint" style="display:none;">
+                    <div class="lwh-header">
+                        <i class="fas fa-history"></i>
+                        <span class="lwh-title-label">Прошлая тренировка</span>
+                    </div>
+                    <div id="lwh-content" class="lwh-content"></div>
+                </div>
+
                 <form id="form-add-workout">
                     <div class="form-group">
                         <label>Ссылка на фото (URL)</label>
@@ -83,7 +93,7 @@
                     </div>
                     <div class="form-group">
                         <label>Название упражнения / тренировки</label>
-                        <input type="text" name="title-add" class="form-control" required placeholder="Например: Жим лежа">
+                        <input type="text" id="title-add" name="title-add" class="form-control" required placeholder="Например: Жим лежа">
                     </div>
 
                 <div class="form-group">

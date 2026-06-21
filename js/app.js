@@ -118,7 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
             sectionStats.style.display = 'block';
             renderStats(); // Обновляем графики при входе
         }
-        if (page === 'add' && sectionAdd) sectionAdd.style.display = 'block';
+        if (page === 'add' && sectionAdd) {
+            sectionAdd.style.display = 'block';
+            prefillFromLastWorkout();
+        }
 
         renderNavigation();
     }
@@ -137,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         selects.forEach(select => {
             if (!select) return;
-            select.innerHTML = '<option value="">Выберите мышцу</option>';
+            select.innerHTML = '<option value="">Выберите упражнение</option>';
             exercises.forEach(ex => {
                 const opt = document.createElement('option');
                 opt.value = ex;
@@ -173,56 +176,89 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.className = 'workout-card';
             li.dataset.id = w.id;
-            
-            const durationText = w.startTime && w.endTime ? 
-                `${calculateDurationText(w.startTime, w.endTime)}` : 'Время не было указано';
-            
-            const muscleTagsHtml = w.muscleTags ? w.muscleTags.map(t => `<span class="tag">${t}</span>`).join('') : '';
+
+            const sets = w.sets || [];
+            const maxWeight = sets.length > 0 ? Math.max(...sets.map(s => Number(s.weight) || 0)) : 0;
+            const totalSets = sets.length;
+            const totalReps = sets.reduce((sum, s) => sum + (Number(s.reps) || 0), 0);
+
+            // Дата и время
+            const dateStr = w.date || '—';
+            const timeStr = (w.startTime && w.endTime)
+                ? `${w.startTime} – ${w.endTime} (${calculateDurationText(w.startTime, w.endTime)})`
+                : (w.startTime ? w.startTime : '');
+
+            // Подходы
+            const setsHtml = sets.map((s, i) => `
+                <div class="wc-set-row">
+                    <span class="wc-set-name">Подход ${i + 1}</span>
+                    <span class="wc-set-reps">${s.reps} повт.</span>
+                    <span class="wc-set-sep">|</span>
+                    <span class="wc-set-weight">${s.weight} кг</span>
+                    <input type="checkbox" class="set-status-checkbox" ${s.done ? 'checked' : ''}
+                        onchange="app.toggleSetStatus('${w.id}', ${i}, this.checked)">
+                </div>
+            `).join('');
+
+            // Итого
+            const totalHtml = sets.length > 0 ? `
+                <div class="wc-total-row">
+                    <span class="wc-total-label">ИТОГО</span>
+                    <span class="wc-total-stats">
+                        <span class="wc-total-item"><i class="fas fa-dumbbell"></i> ${maxWeight} кг макс.</span>
+                        <span class="wc-total-sep">|</span>
+                        <span class="wc-total-item"><i class="fas fa-layer-group"></i> ${totalSets} подх. / ${totalReps} повт.</span>
+                    </span>
+                </div>
+            ` : '';
+
+            // Теги мышц
+            const tagsHtml = (w.muscleTags && w.muscleTags.length > 0)
+                ? w.muscleTags.map(t => `<span class="wc-tag">#${t}</span>`).join('')
+                : '<span class="wc-no-data">—</span>';
 
             li.innerHTML = `
-                <div class="card-header">
-                ${w.image ? `<img src="${w.image}" class="img-preview clickable-photo" alt="Фото упражнения" onerror="this.style.display='none'" onclick="app.openFullPhoto('${w.image}')">` : ''}
-                    <h3>${escapeHtml(w.title)}</h3>
-                    <small>${w.date} | ${durationText}</small>
+                ${w.image ? `<img src="${w.image}" class="img-preview clickable-photo" alt="Фото" onerror="this.style.display='none'" onclick="app.openFullPhoto('${w.image}')">` : ''}
+
+                <div class="wc-section">
+                    <span class="wc-label">УПРАЖНЕНИЕ</span>
+                    <h3 class="wc-title">${escapeHtml(w.title)}</h3>
                 </div>
-                <div class="card-body">
-                    ${muscleTagsHtml}
-<div class="sets-preview">
-    ${(() => {
-        // 1. Берем все подходы для отображения
-        const visibleSets = w.sets || [];
-        
-        // 2. Считаем общий тоннаж по ВСЕМ подходам тренировки (Вес × Повторения)
-        const totalWeight = w.sets.reduce((sum, s) => sum + (Number(s.weight) * Number(s.reps) || 0), 0);
 
-        // 3. Рендерим подходы с нумерацией и чекбоксами
-        let html = visibleSets.map((s, index) => `
-            <div class="set-item">
-                <span class="set-number">${index + 1}.</span>
-                <span class="set-data">${s.weight}кг × ${s.reps}</span>
-                <input type="checkbox" class="set-status-checkbox" ${s.done ? 'checked' : ''} onchange="app.toggleSetStatus('${w.id}', ${index}, this.checked)">
-            </div>
-        `).join('');
+                <div class="wc-divider"></div>
 
-        // 4. Добавляем строку "Итого", если есть хотя бы один подход
-        if (w.sets && w.sets.length > 0) {
-            html += `
-                <div class="set-item total-row" style="width: 100%;">
-                    <span class="total-label">Итого тоннаж:</span>
-                    <span class="total-value">${totalWeight} кг</span>
+                <div class="wc-sets">
+                    ${setsHtml}
+                    ${totalHtml}
                 </div>
-            `;
-        }
 
-        return html;
-    })()}
-</div>
-${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
-                <div class="card-actions">
-                    <button class="btn-sm btn-outline" onclick="app.openEditModal('${w.id}')">
-                        <i class="fas fa-edit"></i> Изменить
+                <div class="wc-divider"></div>
+
+                <div class="wc-section">
+                    <span class="wc-label">ДАТА И ВРЕМЯ</span>
+                    <span class="wc-value">${dateStr}${timeStr ? '&nbsp;&nbsp;' + timeStr : ''}</span>
+                </div>
+
+                <div class="wc-divider"></div>
+
+                <div class="wc-section">
+                    <span class="wc-label">ГРУППЫ МЫШЦ</span>
+                    <div class="wc-tags">${tagsHtml}</div>
+                </div>
+
+                ${w.notes ? `
+                <div class="wc-divider"></div>
+                <div class="wc-section">
+                    <span class="wc-label">КОММЕНТАРИЙ</span>
+                    <div class="wc-notes">${escapeHtml(w.notes)}</div>
+                </div>
+                ` : ''}
+
+                <div class="wc-actions">
+                    <button class="wc-btn-edit" onclick="app.openEditModal('${w.id}')">
+                        <i class="fas fa-edit"></i> Редактировать
                     </button>
-                    <button class="btn-sm btn-danger" onclick="app.deleteWorkout('${w.id}')">
+                    <button class="wc-btn-delete" onclick="app.deleteWorkout('${w.id}')">
                         <i class="fas fa-trash"></i> Удалить
                     </button>
                 </div>
@@ -325,8 +361,38 @@ ${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
             cb.addEventListener('change', () => applyFilters());
         });
 
+        // Слушатели изменений для списков шаблонов упражнений
+        const selectAdd = document.getElementById('exercise-select-add');
+        if (selectAdd) {
+            selectAdd.addEventListener('change', (e) => {
+                const titleInput = document.getElementById('title-add');
+                if (titleInput && e.target.value) {
+                    titleInput.value = e.target.value;
+                    updateLastWorkoutHint(e.target.value);
+                }
+            });
+        }
+
+        const selectEdit = document.getElementById('exercise-select-edit');
+        if (selectEdit) {
+            selectEdit.addEventListener('change', (e) => {
+                const titleInput = formEditWorkout.querySelector('input[name="edit-title"]');
+                if (titleInput && e.target.value) {
+                    titleInput.value = e.target.value;
+                }
+            });
+        }
+
         if (formAddWorkout) formAddWorkout.addEventListener('submit', handleAddWorkout);
         if (formEditWorkout) formEditWorkout.addEventListener('submit', handleEditWorkout);
+
+        // Подсказка прошлой тренировки по названию
+        const titleAddInput = document.getElementById('title-add');
+        if (titleAddInput) {
+            titleAddInput.addEventListener('input', (e) => {
+                updateLastWorkoutHint(e.target.value.trim());
+            });
+        }
 
         const btnAddSet = document.getElementById('btn-add-set');
         if (btnAddSet) {
@@ -682,6 +748,73 @@ ${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
             tempDiv.innerHTML = rowHtml.trim();
             addSetsContainer.appendChild(tempDiv.firstChild);
         }
+    }
+
+    // --- Подсказка последней тренировки (по текущему названию) ---
+    function prefillFromLastWorkout() {
+        // При первом открытии страницы смотрим на текущее значение title
+        const titleInput = document.getElementById('title-add');
+        const currentTitle = titleInput ? titleInput.value.trim() : '';
+        updateLastWorkoutHint(currentTitle);
+    }
+
+    function updateLastWorkoutHint(searchTitle) {
+        const hintBlock = document.getElementById('last-workout-hint');
+        const hintContent = document.getElementById('lwh-content');
+        if (!hintBlock || !hintContent) return;
+
+        // Если название пустое — скрываем
+        if (!searchTitle) {
+            hintBlock.style.display = 'none';
+            return;
+        }
+
+        const workouts = getAllWorkouts ? getAllWorkouts() : [];
+        if (!workouts || workouts.length === 0) {
+            hintBlock.style.display = 'none';
+            return;
+        }
+
+        // Фильтруем по совпадению названия (без регистра)
+        const lowerSearch = searchTitle.toLowerCase();
+        const matched = workouts
+            .filter(w => w.title && w.title.toLowerCase() === lowerSearch)
+            .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+        if (matched.length === 0) {
+            hintBlock.style.display = 'none';
+            return;
+        }
+
+        const last = matched[0];
+        const sets = last.sets || [];
+        const maxWeight = sets.length > 0 ? Math.max(...sets.map(s => Number(s.weight) || 0)) : 0;
+        const totalReps  = sets.reduce((sum, s) => sum + (Number(s.reps) || 0), 0);
+
+        const setsPreview = sets.map((s, i) =>
+            `<span class="lwh-set">П${i + 1}: ${s.weight}кг × ${s.reps}</span>`
+        ).join('');
+
+        const tagsHtml = (last.muscleTags && last.muscleTags.length > 0)
+            ? last.muscleTags.map(t => `<span class="lwh-tag">#${t}</span>`).join('')
+            : '';
+
+        hintContent.innerHTML = `
+            <div class="lwh-row">
+                <strong class="lwh-name">${escapeHtml(last.title)}</strong>
+                <span class="lwh-date">${last.date || ''}</span>
+            </div>
+            ${tagsHtml ? `<div class="lwh-tags">${tagsHtml}</div>` : ''}
+            ${sets.length > 0 ? `
+            <div class="lwh-sets">${setsPreview}</div>
+            <div class="lwh-totals">
+                <span><i class="fas fa-dumbbell"></i> макс. ${maxWeight} кг</span>
+                <span><i class="fas fa-sync-alt"></i> ${totalReps} повт.</span>
+                <span><i class="fas fa-layer-group"></i> ${sets.length} подх.</span>
+            </div>` : '<span class="lwh-empty">Подходы не записаны</span>'}
+        `;
+
+        hintBlock.style.display = 'block';
     }
 
     // Экспортируем функции в глобальную область видимости
