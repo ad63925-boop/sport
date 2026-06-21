@@ -35,7 +35,7 @@
                     <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Руки</span></label>
                 </div>
             </div>
-            <ul id="list-workouts" style="list-style: none;"></ul>
+            <ul id="list-workouts" class="list-workout"></ul>
         </section>
 
         <section id="section-stats" class="app-section">
@@ -78,6 +78,10 @@
             <div class="workout-card">
                 <h2>Новая тренировка</h2>
                 <form id="form-add-workout">
+                    <div class="form-group">
+                        <label>Ссылка на фото (URL)</label>
+                        <input type="url" name="image-add" class="form-control" placeholder="https://example.com/image.jpg">
+                    </div>
                     <div class="form-group">
                         <label>Название упражнения / тренировки</label>
                         <input type="text" name="title-add" class="form-control" required placeholder="Например: Жим лежа">
@@ -136,9 +140,15 @@
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
+
             <span class="close">&times;</span>
             <h2 style="color:var(--color-yellow); margin-bottom:15px;">Изменить тренировку</h2>
             <form id="form-edit-workout">
+                <div class="form-group">
+                <label>Ссылка на фото (URL)</label>
+                <input type="url" id="edit-image" name="edit-image" class="form-control" placeholder="https://example.com/image.jpg">
+            </div>
+
                 <div class="form-group">
                     <label>Название</label>
                     <input type="text" id="edit-title" name="edit-title" class="form-control" required>

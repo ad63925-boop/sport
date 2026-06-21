@@ -177,19 +177,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.innerHTML = `
                 <div class="card-header">
+                ${w.image ? `<img src="${escapeHtml(w.image)}" class="img-preview" alt="${escapeHtml(w.title)}" onerror="this.style.display='none'">` : ''}
                     <h3>${escapeHtml(w.title)}</h3>
                     <small>${w.date} | ${durationText}</small>
                 </div>
                 <div class="card-body">
                     ${muscleTagsHtml}
-                    <div class="sets-preview">
-                        ${w.sets ? w.sets.slice(0, 3).map(s => `
-                            <div class="set-item">${s.weight}кг × ${s.reps}</div>
-                        `).join('') : ''}
-                        ${w.sets && w.sets.length > 3 ? `<span class="more-sets">+${w.sets.length - 3}</span>` : ''}
-                    </div>
-                    ${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
+<div class="sets-preview">
+    ${(() => {
+        // 1. Берем первые 3 подхода для отображения
+        const visibleSets = w.sets.slice(0, 3);
+        
+        // 2. Считаем общий тоннаж по ВСЕМ подходам тренировки (Вес × Повторения)
+        const totalWeight = w.sets.reduce((sum, s) => sum + (Number(s.weight) * Number(s.reps) || 0), 0);
+
+        // 3. Рендерим видимые подходы с нумерацией и чекбоксами
+        let html = visibleSets.map((s, index) => `
+            <div class="set-item">
+                <span class="set-number">${index + 1}.</span>
+                <span class="set-data">${s.weight}кг × ${s.reps}</span>
+                <input type="checkbox" class="set-status-checkbox" ${s.done ? 'checked' : ''} onchange="app.toggleSetStatus('${w.id}', ${index}, this.checked)">
+            </div>
+        `).join('');
+
+        // 4. Если подходов больше 3, добавляем индикатор скрытых подходов
+        if (w.sets && w.sets.length > 3) {
+            html += `<span class="more-sets">+${w.sets.length - 3}</span>`;
+        }
+
+        // 5. Добавляем строку "Итого", если есть хотя бы один подход
+        if (w.sets && w.sets.length > 0) {
+            html += `
+                <div class="set-item total-row" style="width: 100%;">
+                    <span class="total-label">Итого тоннаж:</span>
+                    <span class="total-value">${totalWeight} кг</span>
                 </div>
+            `;
+        }
+
+        return html;
+    })()}
+</div>
+${w.notes ? `<p class="notes">${escapeHtml(w.notes)}</p>` : ''}
                 <div class="card-actions">
                     <button class="btn-sm btn-outline" onclick="app.openEditModal('${w.id}')">
                         <i class="fas fa-edit"></i> Изменить
@@ -333,6 +362,23 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Тренировка удалена', 'success');
     };
 
+    // --- Управление статусом подходов ---
+    window.app.toggleSetStatus = (workoutId, setIndex, isChecked) => {
+    const workouts = getAllWorkouts();
+    const workout = workouts.find(w => w.id === workoutId);
+    
+    if (workout && workout.sets[setIndex]) {
+        // Меняем статус выполнения конкретного подхода
+        workout.sets[setIndex].done = isChecked;
+        
+        // Передаем обновленную тренировку в базу данных
+        if (updateWorkout) {
+            updateWorkout(workout);
+            showToast(isChecked ? 'Подход выполнен!' : 'Статус подхода изменен', 'info');
+        }
+    }
+};
+
     window.app.openEditModal = (id) => {
         currentEditId = id;
         const workouts = getAllWorkouts ? getAllWorkouts() : [];
@@ -340,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!workout) return;
 
         // Заполнение полей
+        document.getElementById('edit-image').value = workout.image || '';
         document.getElementById('edit-title').value = workout.title;
         document.getElementById('edit-date').value = workout.date;
         document.getElementById('edit-start').value = workout.startTime || '';
@@ -388,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const newWorkout = {
             title: formData.get('title-add'),
+            image: formData.get('image-add') || '',
             date: formData.get('date-add') || new Date().toISOString().split('T')[0],
             startTime: formData.get('start-add'),
             endTime: formData.get('end-add'),
@@ -460,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const updatedWorkout = {
             id: currentEditId,
+            image: formData.get('edit-image') || '',
             title: formData.get('edit-title'),
             date: formData.get('edit-date'),
             startTime: formData.get('edit-start'),

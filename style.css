@@ -99,7 +99,7 @@ body {
 .set-item { background: #111827; padding: 4px 8px; border-radius: 6px; font-size: 13px; }
 .more-sets { color: #6b7280; font-size: 13px; align-self: center; }
 .notes { margin-top: 8px; font-size: 13px; color: #6b7280; font-style: italic; }
-.card-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.card-actions { display: flex; gap: 8px; justify-content: flex-end; justify-content: space-around;}
 
 /* Графики */
 .chart-container { position: relative; height: 250px; margin-bottom: 20px; background: #000000; padding: 10px; border-radius: 16px; border: 1px solid #1f2937; }
@@ -109,10 +109,20 @@ body {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
     align-items: center; justify-content: center; z-index: 100; padding: 16px;
 }
+
 .modal-content {
-    background: #000000; width: 100%; max-width: 500px;
-    border-radius: 16px; padding: 20px; position: relative;
-    border: 1px solid #1f2937; max-height: 90vh; overflow-y: auto;
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
+    background: #000000; 
+    width: 100%; 
+    max-width: 500px;
+    border-radius: 16px; 
+    padding: 20px; 
+    position: relative;
+    border: 1px solid #1f2937;
+    max-height: 90vh; 
+    overflow-y: auto;
 }
 .modal .close { position: absolute; right: 16px; top: 16px; cursor: pointer; color: #6b7280; font-size: 20px; }
 
@@ -203,8 +213,15 @@ h2 {
 /* =========================================
    4. Список тренировок (Workout Cards)
    ========================================= */
-#list-workouts {
+
+.list-workout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    padding-left: 5px;
     list-style: none;
+    margin-bottom: 50px; /* Чтобы нижняя навигация не перекрывала контент */
 }
 
 .workout-card:hover {
@@ -221,7 +238,49 @@ h2 {
 
 .card-header h3 {
     font-size: 1.1rem;
-    color: #111827;
+    color: #ffffff;
+}
+
+.set-item { 
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Расталкивает элементы по краям */
+    background: var(--bg-element); 
+    padding: 6px 12px; 
+    border-radius: 8px; 
+    font-size: 13px;
+    margin-bottom: 4px;
+    gap: 10px;
+}
+
+.img-preview {
+    width: 100%;
+    height: 180px;      /* Ограничиваем высоту, чтобы карточка не была огромной */
+    object-fit: cover;  /* Красиво масштабирует картинку без искажений пропорций */
+    border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0; /* Округляем только верхние углы */
+    margin-top: -16px;  /* Компенсируем внутренние отступы карточки, если нужно в край */
+    margin-left: -16px;
+    margin-right: -16px;
+    width: calc(100% + 32px); 
+    margin-bottom: 12px;
+}
+
+.set-number {
+    color: var(--color-muted);
+    font-weight: bold;
+    min-width: 18px; /* Чтобы двоеточия и цифры стояли ровно */
+}
+
+.set-data {
+    flex-grow: 1; /* Занимает всё свободное пространство */
+    text-align: left;
+}
+
+.set-status-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-yellow); /* Окрасит чекбокс в фирменный цвет */
 }
 
 .card-header small {
@@ -412,17 +471,6 @@ button[type="submit"]:hover {
     height: 100%; 
     overflow: auto; 
     background-color: rgba(0,0,0,0.5); 
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; 
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .close {
