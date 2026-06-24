@@ -152,6 +152,29 @@
                 </form>
             </div>
         </section>
+
+        <!-- Секция настроек (Экспорт/Импорт) -->
+        <section id="setting" class="app-section">
+            <h2>Настройки данных</h2>
+            <div class="settings-controls">
+                <!-- Кнопка Экспорта -->
+                <button type="button" id="btn-export" class="wc-action-btn" title="Экспорт данных в JSON">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Экспорт JSON</span>
+                </button>
+
+                <!-- Кнопка Импорта (скрытый input для выбора файла) -->
+                <div class="import-wrapper">
+                    <input type="file" id="file-import" accept=".json" style="display: none;">
+                    <button type="button" id="btn-import" class="wc-action-btn" title="Импорт данных из JSON">
+                        <i class="fa-solid fa-upload"></i>
+                        <span>Импорт JSON</span>
+                    </button>
+                </div>
+            </div>
+            <p class="settings-hint">Экспорт сохранит все ваши упражнения. Импорт перезапишет текущие данные.</p>
+        </section>
+
     </div>
 
     <div id="modal-edit" class="modal">

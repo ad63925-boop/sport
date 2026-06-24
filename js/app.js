@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionHome = document.getElementById('section-home');
     const sectionStats = document.getElementById('section-stats');
     const sectionAdd = document.getElementById('section-add');
-
+    const sectionSetting = document.getElementById('section-setting');
     // Формы
     const formAddWorkout = document.getElementById('form-add-workout');
     const formEditWorkout = document.getElementById('form-edit-workout');
@@ -89,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <button onclick="app.navigateTo('add')" class="nav-btn btn-primary ${getActiveClass('add')}">
                 <i class="fas fa-plus"></i> Новая тренировка
             </button>
+            <button onclick="app.navigateTo('setting')" class="nav-btn ${getActiveClass('setting')}">
+                <i class="fas fa-cog"></i> Настройки
+            </button>            
         `;
     }
 
@@ -102,13 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sectionHome && sectionHome.style.display === 'block') return 'home';
         if (sectionStats && sectionStats.style.display === 'block') return 'stats';
         if (sectionAdd && sectionAdd.style.display === 'block') return 'add';
+        if (sectionSetting && sectionSetting.style.display === 'block') return 'setting';
+
         return 'home';
     }
 
     // Функция для переключения между страницами
     function navigateTo(page) {
         // Скрываем все секции
-        [sectionHome, sectionStats, sectionAdd].forEach(el => {
+        [sectionHome, sectionStats, sectionAdd, sectionSetting].forEach(el => {
             if (el) el.style.display = 'none';
         });
         
@@ -122,7 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
             sectionAdd.style.display = 'block';
             prefillFromLastWorkout();
         }
-
+        if (page === 'setting' && sectionSetting) {
+            sectionSetting.style.display = 'block';
+        }
+        
         renderNavigation();
     }
 
