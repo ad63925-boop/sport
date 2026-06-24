@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Фильтры и поиск
     const inputSearch = document.getElementById('input-search');
     const selectDateFilter = document.getElementById('select-date-filter');
-    const checkboxesMuscle = document.querySelectorAll('.filter-muscle-checkbox');
+    const checkboxesMuscle = document.querySelectorAll('input[name="muscle-filter"]');
 
     // Списки и графики
     const listWorkouts = document.getElementById('list-workouts');
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tags = getMuscleTags ? getMuscleTags() : [];
         checkboxesMuscle.forEach(cb => {
             const label = cb.nextElementSibling;
-            if (label && tags.includes(label.textContent)) {
+            if (label && tags.includes(cb.value)) {
                 cb.disabled = false;
             } else {
                 cb.disabled = true;
@@ -212,10 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             ` : '';
 
-            // Теги мышц
-            const tagsHtml = (w.muscleTags && w.muscleTags.length > 0)
-                ? w.muscleTags.map(t => `<span class="wc-tag">#${t}</span>`).join('')
-                : '<span class="wc-no-data">—</span>';
+        // Теги мышц
+        const tagsHtml = (w.muscleTags && w.muscleTags.length > 0)
+            ? w.muscleTags.map(t => `<span class="wc-tag">${t}</span>`).join('')
+            : '<span class="wc-no-data">—</span>';
+
 
             li.innerHTML = `
                 ${w.image ? `<img src="${w.image}" class="img-preview clickable-photo" alt="Фото" onerror="this.style.display='none'" onclick="app.openFullPhoto('${w.image}')">` : ''}
@@ -255,6 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ` : ''}
 
                 <div class="wc-actions">
+                    <button type="button" class="wc-copy-btn" title="Скопировать упражнение на сегодня">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Копировать</span>
+                    </button>
                     <button class="wc-btn-edit" onclick="app.openEditModal('${w.id}')">
                         <i class="fas fa-edit"></i> Редактировать
                     </button>
@@ -266,6 +271,85 @@ document.addEventListener('DOMContentLoaded', () => {
             listWorkouts.appendChild(li);
         });
     }
+
+    //Скопировать тренировку на сегодня
+    document.addEventListener('DOMContentLoaded', function() {
+  const copyBtn = document.querySelector('.wc-copy-btn');
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      // 1. Получаем данные текущего упражнения
+      // ВАЖНО: Замените этот блок на способ получения данных из вашего приложения
+      // Пример 1: Если данные в JSON-атрибуте родительского блока
+      const exerciseBlock = this.closest('.wc-exercise-block'); // Замените на ваш класс блока упражнения
+      let exerciseData = null;
+      
+      if (exerciseBlock) {
+        const dataAttr = exerciseBlock.getAttribute('data-exercise-json');
+        if (dataAttr) {
+          exerciseData = JSON.parse(dataAttr);
+        }
+      }
+
+      // Пример 2: Если данные в глобальной переменной (например, window.currentExercise)
+      if (!exerciseData && window.currentExercise) {
+        exerciseData = window.currentExercise;
+      }
+
+      if (!exerciseData) {
+        alert('Не удалось найти данные упражнения для копирования.');
+        return;
+      }
+
+      // 2. Создаем копию с сегодняшней датой
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('ru-RU'); // Формат: 24.06.2026
+      
+      const newExercise = {
+        ...exerciseData, // Копируем все свойства
+        id: 'copy_' + Date.now(), // Генерируем уникальный ID
+        date: dateStr, // Устанавливаем сегодняшнюю дату
+        isCopy: true, // Флаг, что это копия
+        title: exerciseData.title + ' (Копия от ' + dateStr + ')' // Обновляем заголовок
+      };
+
+      // 3. Сохраняем или отправляем новую копию
+      // ВАЖНО: Замените эту функцию на вашу логику сохранения (например, в LocalStorage, в базу данных или в UI)
+      saveNewExercise(newExercise);
+
+      // 4. Визуальный отклик
+      const originalText = this.innerHTML;
+      this.innerHTML = 'Скопировано!';
+      this.classList.add('copied');
+      
+      setTimeout(() => {
+        this.innerHTML = originalText;
+        this.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Функция сохранения (пример)
+  function saveNewExercise(data) {
+    console.log('Сохраняем копию:', data);
+    
+    // Пример сохранения в LocalStorage (если у вас так)
+    // let exercises = JSON.parse(localStorage.getItem('exercises') || '[]');
+    // exercises.push(data);
+    // localStorage.setItem('exercises', JSON.stringify(exercises));
+    
+    // Пример добавления в DOM (если нужно сразу отобразить)
+    // const container = document.querySelector('.exercises-list');
+    // const newItem = createExerciseElement(data);
+    // container.appendChild(newItem);
+    
+    // Здесь вызовите вашу реальную функцию сохранения
+    if (typeof window.onExerciseCopied === 'function') {
+      window.onExerciseCopied(data);
+    }
+  }
+});
+
 
     function calculateDurationText(start, end) {
         if (!start || !end) return '';
@@ -431,37 +515,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function applyFilters() {
-        let filtered = getAllWorkouts();
-        
-        // 1. Фильтр поиска по тексту
-        const query = inputSearch ? inputSearch.value.trim().toLowerCase() : '';
-        if (query) {
-            filtered = filtered.filter(w => w.title.toLowerCase().includes(query));
-        }
-        
-        // 2. Фильтр по периоду (выпадающий список)
-        const dateFilter = selectDateFilter ? selectDateFilter.value : null;
-        if (dateFilter && filterWorkouts) {
-            const periodFiltered = filterWorkouts(dateFilter, null);
-            filtered = filtered.filter(w => periodFiltered.some(pf => pf.id === w.id));
-        }
-        
-        // 3. Фильтр по группам мышц
-        const muscleFilters = Array.from(checkboxesMuscle)
-            .filter(cb => cb.checked)
-            .map(cb => cb.nextElementSibling.textContent);
-        if (muscleFilters.length > 0) {
-            filtered = filtered.filter(w => w.muscleTags && w.muscleTags.some(tag => muscleFilters.includes(tag)));
-        }
-        
-        // 4. Фильтр по выбранному дню в календаре
-        if (selectedCalendarDateStr) {
-            filtered = filtered.filter(w => w.date === selectedCalendarDateStr);
-        }
-        
-        renderWorkoutsList(filtered);
+    // --- Фильтры ---
+function applyFilters() {
+    let filtered = getAllWorkouts();
+    
+    // 1. Фильтр поиска по тексту
+    const query = inputSearch ? inputSearch.value.trim().toLowerCase() : '';
+    if (query) {
+        filtered = filtered.filter(w => w.title.toLowerCase().includes(query));
     }
+    
+    // 2. Фильтр по периоду (выпадающий список)
+    const dateFilter = selectDateFilter ? selectDateFilter.value : null;
+    if (dateFilter && filterWorkouts) {
+        const periodFiltered = filterWorkouts(dateFilter, null);
+        filtered = filtered.filter(w => periodFiltered.some(pf => pf.id === w.id));
+    }
+    
+    // 3. Фильтр по группам мышц
+    const muscleFilterCheckboxes = document.querySelectorAll('.filter-muscle-checkbox');
+    const muscleFilters = Array.from(muscleFilterCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value); // Важно: берём именно value, а не текст
+    
+    //console.log('Выбранные мышцы для фильтра:', muscleFilters); // Добавляем отладку
+    
+    if (muscleFilters.length > 0) {
+        filtered = filtered.filter(w => 
+            w.muscleTags && 
+            w.muscleTags.some(tag => muscleFilters.includes(tag))
+        );
+    }
+    
+    // 4. Фильтр по выбранному дню в календаре
+    if (selectedCalendarDateStr) {
+        filtered = filtered.filter(w => w.date === selectedCalendarDateStr);
+    }
+    
+    renderWorkoutsList(filtered);
+}
+
+// --- Чекбоксы фильтров мышц ---
+document.querySelectorAll('.filter-muscle-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', applyFilters);
+});
 
     // --- CRUD операции через UI ---
     window.app.deleteWorkout = (id) => {
@@ -536,6 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalEdit) modalEdit.style.display = 'block';
     };
 
+    // --- Обработчики форм ---
     function handleAddWorkout(e) {
         e.preventDefault();
         const formData = new FormData(formAddWorkout);
@@ -576,12 +674,26 @@ document.addEventListener('DOMContentLoaded', () => {
             calories: parseInt(formData.get('calories-add')) || 0,
             muscleTags: Array.from(checkboxesMuscle)
                 .filter(cb => cb.checked)
-                .map(cb => cb.nextElementSibling.textContent),
+                .map(cb => cb.value), // Используем value
             sets: setsData,
             bodyWeight: parseFloat(formData.get('body-weight-add')) || null,
             type: formData.get('type-add') || 'strength'
         };
 
+        // Проверка собранных данных
+        //console.log('Сохраненные теги:', newWorkout.muscleTags);
+
+                // Проверка: что находится в checkboxesMuscle?
+        //console.log('Элементы чекбоксов:', checkboxesMuscle);
+        //console.log('Количество чекбоксов:', checkboxesMuscle.length);
+
+        // Проверка: есть ли у них value?
+        if (checkboxesMuscle.length > 0) {
+            //console.log('Значение первого чекбокса:', checkboxesMuscle[0].value);
+            //console.log('Атрибут value (полный):', checkboxesMuscle[0].getAttribute('value'));
+        }
+
+        // Валидация
         if (!newWorkout.title || !newWorkout.title.trim()) {
             showToast('Название тренировки обязательно!', 'error');
             return;
@@ -758,6 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLastWorkoutHint(currentTitle);
     }
 
+    // Обновление блока подсказки последней тренировки
     function updateLastWorkoutHint(searchTitle) {
         const hintBlock = document.getElementById('last-workout-hint');
         const hintContent = document.getElementById('lwh-content');
@@ -796,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ).join('');
 
         const tagsHtml = (last.muscleTags && last.muscleTags.length > 0)
-            ? last.muscleTags.map(t => `<span class="lwh-tag">#${t}</span>`).join('')
+            ? last.muscleTags.map(t => `<span class="lwh-tag">${t}</span>`).join('')
             : '';
 
         hintContent.innerHTML = `
@@ -965,3 +1078,4 @@ window.app.openFullPhoto = (imgSrc) => {
         overlay.classList.add('show'); // Показываем оверлей
     }
 };
+

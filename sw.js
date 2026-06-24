@@ -16,7 +16,7 @@ const ASSETS_TO_CACHE = [
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
-    console.log('Service Worker installing...');
+    //console.log('Service Worker installing...');
     
     // Ждем завершения установки, пока не закэшируем файлы
     event.waitUntil(
@@ -28,7 +28,7 @@ self.addEventListener('install', (event) => {
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker activating...');
+    //console.log('Service Worker activating...');
 
     event.waitUntil(
         caches.keys().then((keyList) => {

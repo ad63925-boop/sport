@@ -9,6 +9,8 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0f19">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
 
@@ -27,11 +29,11 @@
                 </select>
                 <div id="calendar-container"></div>
                 <div class="muscle-filters">
-                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Грудь</span></label>
-                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Спина</span></label>
-                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Ноги</span></label>
-                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Плечи</span></label>
-                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox"><span>Руки</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox" value="Грудь"><span>Грудь</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox" value="Спина"><span>Спина</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox" value="Ноги"><span>Ноги</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox" value="Плечи"><span>Плечи</span></label>
+                    <label class="muscle-label"><input type="checkbox" class="filter-muscle-checkbox" value="Руки"><span>Руки</span></label>
                 </div>
             </div>
             <ul id="list-workouts" class="list-workout"></ul>
@@ -226,7 +228,15 @@
     <img id="fullscreen-image" src="" alt="Просмотр фото">
 </div>
 
+    <!-- Кнопка "Наверх" -->
+<a href="#" id="href-to-top" class="btn-to-top" title="Наверх">
+  <i class="fa-solid fa-arrow-up"></i>
+</a>
+
     <script src="js/workouts.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/hrefToTop.js"></script>
+
+
 </body>
 </html>

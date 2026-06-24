@@ -46,7 +46,7 @@ function initDB() {
             }
         };
         localStorage.setItem(DB_KEY, JSON.stringify(initialData));
-        console.log('База данных инициализирована');
+        //console.log('База данных инициализирована');
     } else {
         // Миграция: если база уже есть, но содержит старые данные (мышцы вместо упражнений),
         // заменяем список на корректный
@@ -55,7 +55,7 @@ function initDB() {
             if (db && db.customExercises && db.customExercises.includes('икроножные')) {
                 db.customExercises = defaultExercises;
                 localStorage.setItem(DB_KEY, JSON.stringify(db));
-                console.log('Выполнена миграция списка упражнений');
+                //console.log('Выполнена миграция списка упражнений');
             }
         } catch (e) {
             console.error('Ошибка миграции БД:', e);
