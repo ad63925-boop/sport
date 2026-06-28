@@ -6,7 +6,9 @@
     <title>Дневник тренировок</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="manifest" href="manifest.json">
+    <!-- В секции head или перед закрывающим тегом body -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <meta name="theme-color" content="#0b0f19">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,7 +20,7 @@
 
     <div id="app" class="app-container">
         <h1>Дневник тренировок</h1>
-        <section id="section-home" class="app-section">
+        <section id="home" class="app-section">
             <div class="search-filter-bar">
                 <input type="text" id="input-search" class="form-control" placeholder="Поиск тренировок...">
                 <select id="select-date-filter" class="form-control">
@@ -39,7 +41,7 @@
             <ul id="list-workouts" class="list-workout"></ul>
         </section>
 
-        <section id="section-stats" class="app-section">
+        <section id="statistik" class="app-section">
             <div class="stats-grid-container">
                 <div class="workout-card stat-workout-card">
                     <small>Всего тренировок</small>
@@ -75,7 +77,7 @@
             </div>
         </section>
 
-        <section id="section-add" class="app-section">
+        <section id="addWorkout" class="app-section">
             <div class="workout-card">
                 <h2>Новая тренировка</h2>
 
@@ -258,6 +260,7 @@
 
     <script src="js/workouts.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/exportImportJson.js"></script>
     <script src="js/hrefToTop.js"></script>
 
 

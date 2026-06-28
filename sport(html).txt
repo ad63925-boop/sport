@@ -17,7 +17,7 @@ index.html
 
     <div id="app" class="app-container">
         <h1>Дневник тренировок</h1>
-        <section id="section-home" class="app-section">
+        <section id="home" class="app-section">
             <div class="search-filter-bar">
                 <input type="text" id="input-search" class="form-control" placeholder="Поиск тренировок...">
                 <select id="select-date-filter" class="form-control">
@@ -38,7 +38,7 @@ index.html
             <ul id="list-workouts" class="list-workout"></ul>
         </section>
 
-        <section id="section-stats" class="app-section">
+        <section id="statistik" class="app-section">
             <div class="stats-grid-container">
                 <div class="workout-card stat-workout-card">
                     <small>Всего тренировок</small>
@@ -74,7 +74,7 @@ index.html
             </div>
         </section>
 
-        <section id="section-add" class="app-section">
+        <section id="addWorkout" class="app-section">
             <div class="workout-card">
                 <h2>Новая тренировка</h2>
 
@@ -1349,9 +1349,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const nav = document.getElementById('nav');
     
     // Секции
-    const sectionHome = document.getElementById('section-home');
-    const sectionStats = document.getElementById('section-stats');
-    const sectionAdd = document.getElementById('section-add');
+    const sectionHome = document.getElementById('home');
+    const sectionStats = document.getElementById('statistik');
+    const sectionAdd = document.getElementById('addWorkout');
 
     // Формы
     const formAddWorkout = document.getElementById('form-add-workout');

@@ -567,3 +567,5 @@ if (typeof window !== 'undefined') {
         clearAllData
     };
 }
+
+console.log(window.exercisesData);

@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nav = document.getElementById('nav');
     
     // Секции
-    const sectionHome = document.getElementById('section-home');
-    const sectionStats = document.getElementById('section-stats');
-    const sectionAdd = document.getElementById('section-add');
-    const sectionSetting = document.getElementById('section-setting');
+    const sectionHome = document.getElementById('home');
+    const sectionStats = document.getElementById('statistik');
+    const sectionAdd = document.getElementById('addWorkout');
+    const sectionSetting = document.getElementById('setting');
     // Формы
     const formAddWorkout = document.getElementById('form-add-workout');
     const formEditWorkout = document.getElementById('form-edit-workout');
@@ -101,38 +101,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Определяем текущую страницу по видимости секций
-    function getCurrentPage() {
-        if (sectionHome && sectionHome.style.display === 'block') return 'home';
-        if (sectionStats && sectionStats.style.display === 'block') return 'stats';
-        if (sectionAdd && sectionAdd.style.display === 'block') return 'add';
-        if (sectionSetting && sectionSetting.style.display === 'block') return 'setting';
+// Определяем текущую страницу по наличию класса visible
+function getCurrentPage() {
+    if (sectionHome && sectionHome.classList.contains('visible')) return 'home';
+    if (sectionStats && sectionStats.classList.contains('visible')) return 'stats';
+    if (sectionAdd && sectionAdd.classList.contains('visible')) return 'add';
+    if (sectionSetting && sectionSetting.classList.contains('visible')) return 'setting';
+}
 
-        return 'home';
-    }
 
     // Функция для переключения между страницами
-    function navigateTo(page) {
-        // Скрываем все секции
-        [sectionHome, sectionStats, sectionAdd, sectionSetting].forEach(el => {
-            if (el) el.style.display = 'none';
-        });
-        
-        // Показываем нужную
-        if (page === 'home' && sectionHome) sectionHome.style.display = 'block';
-        if (page === 'stats' && sectionStats) {
-            sectionStats.style.display = 'block';
-            renderStats(); // Обновляем графики при входе
-        }
-        if (page === 'add' && sectionAdd) {
-            sectionAdd.style.display = 'block';
-            prefillFromLastWorkout();
-        }
-        if (page === 'setting' && sectionSetting) {
-            sectionSetting.style.display = 'block';
-        }
-        
-        renderNavigation();
+// Функция для переключения между страницами
+// Функция для переключения между страницами
+function navigateTo(page) {
+
+    // Убираем класс visible у ВСЕХ четырех секций
+    [sectionHome, sectionStats, sectionAdd, sectionSetting].forEach(el => {
+        if (el) el.classList.remove('visible');
+    });
+    
+    // Добавляем класс visible нужной секции
+    switch (page) {
+        case 'home':
+            if (sectionHome) {
+                sectionHome.classList.add('visible');
+                renderWorkoutsList();
+            }
+            break;
+
+        case 'stats':
+            if (sectionStats) {
+                sectionStats.classList.add('visible');
+                renderStats();
+            }
+            break;
+        case 'add':
+            if (sectionAdd) {
+                sectionAdd.classList.add('visible');
+                prefillFromLastWorkout();
+            }
+            break;
+        case 'setting':
+            if (sectionSetting) {
+                sectionSetting.classList.add('visible');
+            }
+            break;
     }
+    
+    renderNavigation();
+}
 
     // Экспортируем навигацию в глобальную область видимости для onclick в HTML
     window.app = window.app || {};
@@ -263,15 +280,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ` : ''}
 
                 <div class="wc-actions">
-                    <button type="button" class="wc-copy-btn" onclick="app.copyWorkoutToToday('${w.id}', this)" title="Скопировать упражнение на сегодня">
+                    <button type="button" class="wc-btn-copy" onclick="app.copyWorkoutToToday('${w.id}', this)" title="Скопировать упражнение на сегодня">
                         <i class="fa-solid fa-copy"></i>
-                        <span>Копировать</span>
                     </button>
                     <button class="wc-btn-edit" onclick="app.openEditModal('${w.id}')">
-                        <i class="fas fa-edit"></i> Редактировать
+                        <i class="fas fa-edit"></i>
                     </button>
                     <button class="wc-btn-delete" onclick="app.deleteWorkout('${w.id}')">
-                        <i class="fas fa-trash"></i> Удалить
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             `;
@@ -1029,3 +1045,5 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 500);
     }, 3000);
 }
+
+console.log(window.exercisesData);
