@@ -102,6 +102,7 @@ h2 {
 }
 
 .nav-btn.btn-primary {
+    padding: 6px 12px;
     background: transparent;
     color: var(--color-muted);
 }
@@ -558,7 +559,7 @@ textarea.form-control {
 /* =========================================
    8. Кнопки
    ========================================= */
-button, .btn {
+.btn {
     border: none;
     border-radius: 12px;
     padding: 10px 16px;
@@ -573,6 +574,9 @@ button, .btn {
 }
 
 .btn-primary {
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
     background: var(--color-primary);
     color: #000000;
 }
@@ -1040,21 +1044,21 @@ canvas {
 .app-section h2 {
     margin-top: 0;
     font-size: 1.2rem;
-    color: #333;
+    color: #ffffff;
 }
 
 .settings-controls {
     display: flex;
     gap: 15px;
     margin-top: 15px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
 }
 
 .wc-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    width: 100%;
+    padding: 10px 15px;
     background-color: #f8f9fa;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -1065,9 +1069,9 @@ canvas {
 }
 
 .wc-action-btn:hover {
-    background-color: #e9ecef;
+    background-color: #000000;
     border-color: #ccc;
-    color: #333;
+    color: #ffffff;
 }
 
 .wc-action-btn i {
@@ -1088,6 +1092,3 @@ canvas {
     100% { transform: scale(1); }
 }
 
-.wc-action-btn:active {
-    transform: scale(0.98);
-}

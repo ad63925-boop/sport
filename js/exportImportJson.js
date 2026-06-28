@@ -1,119 +1,106 @@
 /**
  * Файл: exportImportJson.js
  * Функции для экспорта и импорта данных в формате JSON
+ * DB_KEY: ключ для хранения данных в localStorage
+ * 
+ * Экспорт:
+ * - Кнопка "Экспорт JSON" вызывает диалоговое окно подтверждения.
+ * - Если пользователь подтверждает, данные из localStorage экспортируются в файл JSON.
+ * fit-workouts-v1 - ключ для хранения данных в localStorage
  */
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    const btnExport = document.getElementById('btn-export');
-    const btnImport = document.getElementById('btn-import');
-    const fileInput = document.getElementById('file-import');
+(function () {
+    // Теперь все переменные внутри этой функции изолированы и не вызовут ошибок дублирования!
+    const DB_KEY = 'fit-workouts-v1';
 
-    // --- ФУНКЦИЯ ЭКСПОРТА ---
-    if (btnExport) {
-        btnExport.addEventListener('click', function() {
-            // 1. Подтверждение перед экспортом (SweetAlert2)
-            Swal.fire({
-                title: 'Экспорт данных',
-                text: 'Вы хотите сохранить текущие данные в файл JSON?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Да, сохранить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performExport();
-                }
+    // Функция для получения данных из хранилища
+function getDB() {
+        try {
+            const data = localStorage.getItem(DB_KEY);
+            // Возвращаем распарсенный объект, либо пустой объект, если данных нет
+            return data ? JSON.parse(data) : {};
+        } catch (error) {
+            console.error('Ошибка при получении данных:', error);
+            return {};
+        }
+    }
+
+    // Функция для сохранения данных
+function saveDB(data) {
+        try {
+            localStorage.setItem(DB_KEY, JSON.stringify(data));
+            return true;
+        } catch (error) {
+            console.error('Ошибка при сохранении данных:', error);
+            return false;
+        }
+    }
+
+    // Инициализация данных при загрузке скрипта
+  window.exercisesData = getDB();
+    console.log(DB_KEY, 'инициализирована. Текущие данные:', window.exercisesData);
+
+    // Инициализация обработчиков при полной загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnExport = document.getElementById('btn-export');
+        const btnImport = document.getElementById('btn-import');
+        const fileImport = document.getElementById('file-import');
+
+        // --- ЛОГИКА ЭКСПОРТА ---
+        if (btnExport) {
+            btnExport.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Экспорт данных',
+                    text: 'Вы хотите сохранить текущие данные в файл JSON?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Да, сохранить',
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performExport();
+                    }
+                });
             });
-        });
-    }
-
-    // --- ФУНКЦИЯ ИМПОРТА ---
-    if (btnImport) {
-        btnImport.addEventListener('click', function() {
-            // Открываем диалог выбора файла
-            fileInput.click();
-        });
-    }
-
-    // Обработка выбора файла
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // 2. Подтверждение перед импортом (SweetAlert2)
-            Swal.fire({
-                title: 'Импорт данных',
-                text: `Вы собираетесь загрузить файл "${file.name}". Это действие перезапишет текущие данные!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Да, импортировать',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performImport(file);
-                }
-                // Сбрасываем input, чтобы можно было выбрать тот же файл снова
-                fileInput.value = '';
-            });
-        });
-    }
-
-    // --- ЛОГИКА ЭКСПОРТА ---
-    function performExport() {
-        // ВАЖНО: Замените 'exercisesData' на имя вашей переменной с данными
-        // Если данные хранятся в localStorage, используйте JSON.parse(localStorage.getItem('...'))
-        const dataToExport = window.exercisesData || []; 
-
-        if (!dataToExport || dataToExport.length === 0) {
-            Swal.fire('Ошибка', 'Нет данных для экспорта.', 'error');
-            return;
         }
 
-        const jsonString = JSON.stringify(dataToExport, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        const dateStr = new Date().toISOString().slice(0, 10);
-        a.href = url;
-        a.download = `exercises_backup_${dateStr}.json`;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Очистка
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // --- ЛОГИКА ИМПОРТА ---
+        if (btnImport && fileImport) {
+            btnImport.addEventListener('click', function() {
+                fileImport.click();
+            });
 
-        Swal.fire('Готово', 'Файл успешно скачан!', 'success');
-    }
+            fileImport.addEventListener('change', function() {
+                const file = fileImport.files[0];
+                if (!file) return;
 
-    // --- ЛОГИКА ИМПОРТА ---
-    function performImport(file) {
+                performImport(file);
+                fileImport.value = ''; // Сброс
+            });
+        }
+    });
+
+    // --- ФУНКЦИЯ ВЫПОЛНЕНИЯ ИМПОРТА ---
+function performImport(file) {
         const reader = new FileReader();
 
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
 
-                if (!Array.isArray(importedData)) {
-                    throw new Error('Файл должен содержать массив данных.');
+                // ПРОВЕРКА: Так как мы импортируем весь объект приложения, 
+                // проверим наличие главного свойства workouts
+                if (!importedData || !Array.isArray(importedData.workouts)) {
+                    throw new Error('Файл должен содержать объект со списком тренировок.');
                 }
 
-                // ВАЖНО: Замените 'exercisesData' на имя вашей переменной
-                // Здесь мы обновляем данные в памяти
+                if (!saveDB(importedData)) {
+                    throw new Error('Ошибка при сохранении данных.');
+                }
+
                 window.exercisesData = importedData;
-
-                // Если у вас есть функция сохранения в localStorage, вызовите её здесь
-                // localStorage.setItem('exercisesData', JSON.stringify(importedData));
-
-                // Если у вас есть функция рендеринга списка, вызовите её здесь
-                // renderExercisesList(); 
 
                 Swal.fire({
                     title: 'Успешно!',
@@ -121,11 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     icon: 'success',
                     confirmButtonText: 'ОК'
                 }).then(() => {
-                    // Перезагрузка страницы или обновление интерфейса
-                    // location.reload(); 
-                    if (typeof window.refreshUI === 'function') {
-                        window.refreshUI();
-                    }
+                    // Перезагружаем страницу, чтобы приложение подтянуло новые данные из localStorage
+                    window.location.reload();
                 });
 
             } catch (error) {
@@ -140,6 +124,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
         reader.readAsText(file);
     }
-});
 
-console.log(window.exercisesData);
+    // --- ФУНКЦИЯ ВЫПОЛНЕНИЯ ЭКСПОРТА ---
+    function performExport() {
+        // Читаем данные напрямую из localStorage в момент нажатия кнопки
+        const currentData = getDB(); 
+
+        // Проверяем, есть ли тренировки внутри объекта приложения
+        if (!currentData || !currentData.workouts || currentData.workouts.length === 0) {
+            Swal.fire({
+                title: 'Нет данных',
+                text: 'Список упражнений пуст. Нечего экспортировать.',
+                icon: 'warning',
+                confirmButtonText: 'ОК'
+            });
+            return;
+        }
+
+        // Экспортируем весь объект целиком (включая историю веса и настройки)
+        const jsonString = JSON.stringify(currentData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        const date = new Date();
+        const fileName = `exercises_export_${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.json`;
+        
+        link.href = url;
+        link.download = fileName;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        Swal.fire({
+            title: 'Готово!',
+            text: 'Файл успешно скачан.',
+            icon: 'success',
+            confirmButtonText: 'ОК'
+        });
+    }
+
+} )(); // Конец капсулы ИИФЕ
+

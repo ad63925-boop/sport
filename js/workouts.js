@@ -568,4 +568,4 @@ if (typeof window !== 'undefined') {
     };
 }
 
-console.log(window.exercisesData);
+console.log(DB_KEY, 'инициализирована. Текущие данные:', getDB());
